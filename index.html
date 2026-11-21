@@ -1,0 +1,597 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS OSINT — Intelligence Platform</title>
+<style>
+:root {
+  --bg:#050807;
+  --panel:#0b1210;
+  --panel2:#101a15;
+  --green:#00ff88;
+  --green2:#00bd68;
+  --text:#d8e9df;
+  --muted:#789084;
+  --border:#183b2a;
+  --red:#ff5050;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:Consolas,Monaco,monospace;
+  min-height:100vh;
+}
+header{
+  height:72px;
+  padding:0 30px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom:1px solid var(--border);
+  background:#080e0b;
+  position:sticky;
+  top:0;
+  z-index:10;
+}
+.logo{
+  font-size:23px;
+  font-weight:900;
+  letter-spacing:3px;
+  color:var(--green);
+  text-shadow:0 0 12px #00ff8855;
+}
+.logo span{color:white}
+.status{font-size:11px;color:var(--green)}
+.layout{display:flex;min-height:calc(100vh - 72px)}
+aside{
+  width:230px;
+  background:#080e0b;
+  border-right:1px solid var(--border);
+  padding:25px 15px;
+  flex-shrink:0;
+}
+.nav-title{
+  color:#526d5e;
+  font-size:10px;
+  letter-spacing:2px;
+  margin:20px 10px 10px;
+}
+.nav{
+  width:100%;
+  display:block;
+  padding:13px 12px;
+  border:1px solid transparent;
+  background:transparent;
+  color:#a9c4b4;
+  text-align:left;
+  font:inherit;
+  cursor:pointer;
+  border-radius:5px;
+  margin:3px 0;
+}
+.nav:hover,.nav.active{
+  color:var(--green);
+  background:#0d2117;
+  border-color:var(--border);
+}
+main{padding:30px;width:100%;max-width:1450px;margin:auto}
+.page{display:none}
+.page.active{display:block}
+.heading{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:15px;
+  margin-bottom:25px;
+}
+h1{font-size:25px;color:white}
+h1 span{color:var(--green)}
+.subtitle{color:var(--muted);font-size:12px;margin-top:8px}
+.terminal-label{font-size:11px;color:var(--green)}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+  gap:15px;
+  margin-bottom:20px;
+}
+.card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:7px;
+  padding:20px;
+  margin-bottom:16px;
+}
+.card h2{font-size:14px;color:var(--green);margin-bottom:14px}
+.metric{font-size:27px;color:var(--green);font-weight:bold}
+.muted{color:var(--muted);font-size:12px;line-height:1.7}
+.big-terminal{
+  background:#020503;
+  border:1px solid #16432d;
+  border-radius:7px;
+  padding:20px;
+  color:var(--green);
+  min-height:125px;
+  font-size:12px;
+  line-height:1.9;
+  overflow-wrap:anywhere;
+}
+input,textarea,select{
+  width:100%;
+  background:#050a07;
+  border:1px solid #24543a;
+  border-radius:5px;
+  color:white;
+  padding:13px;
+  font:inherit;
+  font-size:13px;
+  margin:8px 0 13px;
+}
+input:focus,textarea:focus{
+  outline:1px solid var(--green);
+  border-color:var(--green);
+}
+label{font-size:12px;color:#9db8a7}
+button.action{
+  background:#063b24;
+  border:1px solid var(--green);
+  color:var(--green);
+  padding:12px 17px;
+  border-radius:4px;
+  cursor:pointer;
+  font:inherit;
+  font-size:12px;
+}
+button.action:hover{
+  background:var(--green);
+  color:#00170b;
+  box-shadow:0 0 15px #00ff8844;
+}
+.result{margin-top:15px}
+.result-line{
+  padding:11px;
+  border-bottom:1px solid #183b2a;
+  font-size:12px;
+  overflow-wrap:anywhere;
+}
+.good{color:var(--green)}
+.warning{color:#ffc45b}
+.bad{color:var(--red)}
+.tag{
+  display:inline-block;
+  color:var(--green);
+  border:1px solid #24543a;
+  padding:5px 8px;
+  font-size:10px;
+  margin:4px 3px 4px 0;
+}
+footer{
+  text-align:center;
+  color:#526d5e;
+  font-size:10px;
+  padding:25px;
+  border-top:1px solid var(--border);
+}
+@media(max-width:700px){
+ .layout{display:block}
+ aside{width:100%;display:flex;overflow-x:auto;padding:8px}
+ .nav-title{display:none}
+ .nav{white-space:nowrap;width:auto}
+ main{padding:20px 13px}
+ header{padding:0 15px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">NEXUS<span>_OSINT</span></div>
+  <div class="status">● SYSTEM ONLINE</div>
+</header>
+
+<div class="layout">
+
+<aside>
+  <button class="nav active" data-page="dashboard">▣ Dashboard</button>
+  <button class="nav" data-page="domain">⌕ Domain Analyzer</button>
+  <button class="nav" data-page="ip">◈ IP Inspector</button>
+  <button class="nav" data-page="url">↗ URL Inspector</button>
+  <button class="nav" data-page="sources">▤ Source Checker</button>
+  <button class="nav" data-page="academy">⌘ OSINT Academy</button>
+  <button class="nav" data-page="about">⚙ About</button>
+</aside>
+
+<main>
+
+<!-- DASHBOARD -->
+<section class="page active" id="dashboard">
+  <div class="heading">
+    <div>
+      <h1>NEXUS <span>COMMAND CENTER</span></h1>
+      <p class="subtitle">Open-source intelligence learning environment</p>
+    </div>
+    <div class="terminal-label">[ DEFENSIVE MODE ]</div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <p class="muted">AVAILABLE MODULES</p>
+      <div class="metric">06</div>
+    </div>
+    <div class="card">
+      <p class="muted">LOCAL ANALYZERS</p>
+      <div class="metric">03</div>
+    </div>
+    <div class="card">
+      <p class="muted">NETWORK REQUESTS</p>
+      <div class="metric">00</div>
+    </div>
+    <div class="card">
+      <p class="muted">OPERATING MODE</p>
+      <div class="metric" style="font-size:19px">LOCAL</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>▸ SYSTEM TERMINAL</h2>
+    <div class="big-terminal" id="terminal">
+      NEXUS OSINT INITIALIZED...<br>
+      Loading defensive intelligence modules...<br>
+      [OK] Domain analyzer ready<br>
+      [OK] IP inspector ready<br>
+      [OK] URL inspector ready<br>
+      [OK] Source verification ready<br>
+      <br>
+      SYSTEM READY. AWAITING INPUT_
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>▸ PLATFORM PURPOSE</h2>
+    <p class="muted">
+      NEXUS OSINT is an educational environment for learning
+      open-source research, website analysis, digital security
+      and source verification. It does not search for private
+      individuals or expose personal information.
+    </p>
+  </div>
+</section>
+
+<!-- DOMAIN -->
+<section class="page" id="domain">
+  <div class="heading">
+    <div>
+      <h1>DOMAIN <span>ANALYZER</span></h1>
+      <p class="subtitle">Examination locale d'un nom de domaine</p>
+    </div>
+  </div>
+  <div class="card">
+    <h2>▸ DOMAIN INPUT</h2>
+    <label>Nom de domaine</label>
+    <input id="domainInput" placeholder="example.com">
+    <button class="action" onclick="analyzeDomain()">EXECUTE ANALYSIS</button>
+    <div class="result" id="domainResult"></div>
+  </div>
+  <p class="muted">Cette analyse examine uniquement le format du domaine fourni. Elle ne contacte aucun serveur.</p>
+</section>
+
+<!-- IP -->
+<section class="page" id="ip">
+  <div class="heading">
+    <div>
+      <h1>IP <span>INSPECTOR</span></h1>
+      <p class="subtitle">Classification technique d'une adresse IP</p>
+    </div>
+  </div>
+  <div class="card">
+    <h2>▸ IP ADDRESS INPUT</h2>
+    <label>Adresse IPv4</label>
+    <input id="ipInput" placeholder="8.8.8.8">
+    <button class="action" onclick="analyzeIP()">INSPECT ADDRESS</button>
+    <div class="result" id="ipResult"></div>
+  </div>
+  <p class="muted">Aucune géolocalisation, identification d'utilisateur ou recherche de propriétaire n'est effectuée.</p>
+</section>
+
+<!-- URL -->
+<section class="page" id="url">
+  <div class="heading">
+    <div>
+      <h1>URL <span>INSPECTOR</span></h1>
+      <p class="subtitle">Détection locale de caractéristiques potentiellement suspectes</p>
+    </div>
+  </div>
+  <div class="card">
+    <h2>▸ URL INPUT</h2>
+    <label>Adresse web</label>
+    <input id="urlInput" placeholder="https://example.com">
+    <button class="action" onclick="analyzeURL()">SCAN URL</button>
+    <div class="result" id="urlResult"></div>
+  </div>
+  <p class="muted">Ne clique pas sur un lien suspect. L'analyse ci-dessous ne visite pas le site et ne garantit pas sa sécurité.</p>
+</section>
+
+<!-- SOURCES -->
+<section class="page" id="sources">
+  <div class="heading">
+    <div>
+      <h1>SOURCE <span>CHECKER</span></h1>
+      <p class="subtitle">Évaluer la fiabilité d'une information</p>
+    </div>
+  </div>
+  <div class="card">
+    <h2>▸ SOURCE EVALUATION</h2>
+    <label>Nom de la source</label>
+    <input id="sourceName" placeholder="Nom du média ou de l'organisation">
+    <label>URL de la source (facultatif)</label>
+    <input id="sourceURL" placeholder="https://...">
+    <label>Date de publication connue ?</label>
+    <select id="sourceDate">
+      <option value="yes">Oui</option>
+      <option value="no">Non</option>
+    </select>
+    <label>La source cite-t-elle ses preuves ?</label>
+    <select id="sourceProof">
+      <option value="yes">Oui</option>
+      <option value="no">Non</option>
+    </select>
+    <label>Une autre source indépendante confirme-t-elle l'information ?</label>
+    <select id="sourceCross">
+      <option value="yes">Oui</option>
+      <option value="no">Non</option>
+    </select>
+    <button class="action" onclick="checkSource()">EVALUATE SOURCE</button>
+    <div class="result" id="sourceResult"></div>
+  </div>
+  <p class="muted">L'évaluation est indicative et ne remplace pas une vérification humaine.</p>
+</section>
+
+<!-- ACADEMY -->
+<section class="page" id="academy">
+  <div class="heading">
+    <div>
+      <h1>OSINT <span>ACADEMY</span></h1>
+      <p class="subtitle">Learn. Verify. Protect.</p>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <h2>01 — OSINT BASICS</h2>
+      <p class="muted">Comprendre les sources ouvertes, leurs limites et les règles éthiques.</p>
+      <span class="tag">BEGINNER</span>
+    </div>
+    <div class="card">
+      <h2>02 — DOMAIN INTELLIGENCE</h2>
+      <p class="muted">Comprendre les noms de domaine, DNS, sous-domaines et certificats.</p>
+      <span class="tag">INTERMEDIATE</span>
+    </div>
+    <div class="card">
+      <h2>03 — DIGITAL FOOTPRINT</h2>
+      <p class="muted">Apprendre à réduire sa propre exposition numérique.</p>
+      <span class="tag">PRIVACY</span>
+    </div>
+    <div class="card">
+      <h2>04 — SOURCE VERIFICATION</h2>
+      <p class="muted">Comparer les sources, vérifier les dates et détecter les informations trompeuses.</p>
+      <span class="tag">RESEARCH</span>
+    </div>
+  </div>
+  <div class="card">
+    <h2>▸ ETHICAL RULES</h2>
+    <p class="muted">
+      • Respecter la vie privée.<br><br>
+      • Ne pas contourner les contrôles d'accès.<br><br>
+      • Ne pas rechercher l'adresse ou la position privée d'une personne.<br><br>
+      • Ne pas publier de données personnelles.<br><br>
+      • Vérifier les informations avant de les partager.
+    </p>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="page" id="about">
+  <div class="heading">
+    <div>
+      <h1>ABOUT <span>NEXUS</span></h1>
+      <p class="subtitle">Platform information</p>
+    </div>
+  </div>
+  <div class="card">
+    <h2>▸ VERSION</h2>
+    <p class="muted">NEXUS OSINT 1.0 — Educational edition</p>
+  </div>
+  <div class="card">
+    <h2>▸ PRIVACY</h2>
+    <p class="muted">
+      Cette version fonctionne localement dans le navigateur.
+      Les analyses ne sont pas envoyées à un serveur.
+      Les informations saisies ne sont pas enregistrées durablement.
+    </p>
+  </div>
+</section>
+
+</main>
+</div>
+
+<footer>NEXUS OSINT — EDUCATIONAL & DEFENSIVE INTELLIGENCE PLATFORM</footer>
+
+<script>
+// NAVIGATION
+document.querySelectorAll(".nav").forEach(button=>{
+  button.addEventListener("click",()=>{
+    document.querySelectorAll(".nav").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+    button.classList.add("active");
+    document.getElementById(button.dataset.page).classList.add("active");
+  });
+});
+
+function line(label,value){
+  const div=document.createElement("div");
+  div.className="result-line";
+  const strong=document.createElement("strong");
+  strong.textContent=label+": ";
+  const span=document.createElement("span");
+  span.textContent=value;
+  div.append(strong,span);
+  return div;
+}
+
+// DOMAIN ANALYZER
+function analyzeDomain(){
+  const input=document.getElementById("domainInput").value.trim();
+  const output=document.getElementById("domainResult");
+  output.replaceChildren();
+
+  let hostname;
+  try{
+    hostname=new URL(input.includes("://")?input:"https://"+input).hostname;
+    if(!hostname || !hostname.includes(".")) throw new Error();
+  }catch{
+    output.textContent="Invalid domain format.";
+    return;
+  }
+
+  const parts=hostname.split(".");
+  const suspicious=[];
+  if(hostname.length>60) suspicious.push("Unusually long domain");
+  if(hostname.includes("xn--")) suspicious.push("Internationalized domain name");
+  if((hostname.match(/-/g)||[]).length>=3) suspicious.push("Multiple hyphens");
+  if(/\d{5,}/.test(hostname)) suspicious.push("Long numeric sequence");
+
+  output.appendChild(line("HOSTNAME",hostname));
+  output.appendChild(line("DOMAIN PARTS",parts.length));
+  output.appendChild(line("TOP LEVEL DOMAIN",parts[parts.length-1]));
+  output.appendChild(line("CHARACTERS",hostname.length));
+  output.appendChild(line("FORMAT FLAGS",suspicious.length?suspicious.join(", "):"No obvious format flags"));
+
+  const note=document.createElement("p");
+  note.className="muted";
+  note.textContent="These indicators are not proof of malicious activity. A domain can be legitimate even when a flag appears.";
+  output.appendChild(note);
+}
+
+// IP INSPECTOR
+function isPrivateIPv4(ip){
+  const p=ip.split(".").map(Number);
+  return p[0]===10 ||
+    p[0]===127 ||
+    (p[0]===172 && p[1]>=16 && p[1]<=31) ||
+    (p[0]===192 && p[1]===168) ||
+    (p[0]===169 && p[1]===254) ||
+    p[0]===0;
+}
+
+function analyzeIP(){
+  const input=document.getElementById("ipInput").value.trim();
+  const output=document.getElementById("ipResult");
+  output.replaceChildren();
+
+  const p=input.split(".");
+  const valid=p.length===4 && p.every(x=>
+    /^\d{1,3}$/.test(x) && Number(x)>=0 && Number(x)<=255
+  );
+
+  if(!valid){
+    output.textContent="Invalid IPv4 address.";
+    return;
+  }
+
+  const first=Number(p[0]);
+  let type="Public-range address";
+  if(isPrivateIPv4(input)) type="Private or special-use range";
+  if(first>=224 && first<=239) type="Multicast range";
+  if(first>=240) type="Reserved range";
+
+  output.appendChild(line("ADDRESS",input));
+  output.appendChild(line("CLASSIFICATION",type));
+  output.appendChild(line("OCTETS",p.join(" / ")));
+
+  const note=document.createElement("p");
+  note.className="muted";
+  note.textContent="This tool only classifies the address format and common ranges. It does not identify a person, location or network owner.";
+  output.appendChild(note);
+}
+
+// URL INSPECTOR
+function analyzeURL(){
+  const input=document.getElementById("urlInput").value.trim();
+  const output=document.getElementById("urlResult");
+  output.replaceChildren();
+
+  let parsed;
+  try{
+    parsed=new URL(input);
+    if(!["http:","https:"].includes(parsed.protocol)) throw new Error();
+  }catch{
+    output.textContent="Invalid HTTP/HTTPS URL.";
+    return;
+  }
+
+  const flags=[];
+  if(parsed.protocol!=="https:") flags.push("No HTTPS");
+  if(parsed.username || parsed.password) flags.push("Credentials embedded in URL");
+  if(parsed.hostname.includes("xn--")) flags.push("Internationalized hostname");
+  if(parsed.hostname.split(".").length>5) flags.push("Many domain labels");
+  if(input.length>200) flags.push("Unusually long URL");
+
+  output.appendChild(line("HOST",parsed.hostname));
+  output.appendChild(line("PROTOCOL",parsed.protocol));
+  output.appendChild(line("PORT",parsed.port||"Default"));
+  output.appendChild(line("QUERY PARAMETERS",parsed.searchParams.size));
+  output.appendChild(line("FORMAT FLAGS",flags.length?flags.join(", "):"No obvious format flags"));
+
+  const note=document.createElement("p");
+  note.className="muted";
+  note.textContent="This is a local format inspection, not a malware scan or a guarantee that the website is safe.";
+  output.appendChild(note);
+}
+
+// SOURCE CHECKER
+function checkSource(){
+  const name=document.getElementById("sourceName").value.trim();
+  const url=document.getElementById("sourceURL").value.trim();
+  const date=document.getElementById("sourceDate").value;
+  const proof=document.getElementById("sourceProof").value;
+  const cross=document.getElementById("sourceCross").value;
+  const output=document.getElementById("sourceResult");
+  output.replaceChildren();
+
+  if(!name){
+    output.textContent="Enter a source name.";
+    return;
+  }
+
+  if(url){
+    try{
+      const parsed=new URL(url);
+      if(!["http:","https:"].includes(parsed.protocol)) throw new Error();
+    }catch{
+      output.textContent="Invalid source URL.";
+      return;
+    }
+  }
+
+  const score=[date,proof,cross].filter(x=>x==="yes").length;
+  output.appendChild(line("SOURCE",name));
+  output.appendChild(line("VERIFICATION CHECKS",score+"/3"));
+
+  let assessment;
+  if(score===3) assessment="Several positive verification indicators";
+  else if(score===2) assessment="Some verification indicators";
+  else assessment="Insufficient verification indicators";
+
+  output.appendChild(line("ASSESSMENT",assessment));
+
+  const note=document.createElement("p");
+  note.className="muted";
+  note.textContent="This is a checklist, not an automated credibility score. Always examine the original evidence and possible conflicts of interest.";
+  output.appendChild(note);
+}
+</script>
+</body>
+</html>
+
